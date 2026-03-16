@@ -45,21 +45,19 @@ const STYLE_RULES: Record<Template, {
   hype: {
     clipDur: 1.5,
     transDur: 0.12,
-    // Fast, punchy — wipes and pixelize feel energetic
-    transitions: ['fade', 'wipeleft', 'wiperight', 'pixelize', 'circlecrop'],
+    // Only transitions confirmed present in FFmpeg 4.3 (the wasm build)
+    transitions: ['fade', 'wipeleft', 'wiperight', 'slideleft', 'slideright'],
     bpm: 128,
   },
   reels: {
     clipDur: 2.5,
     transDur: 0.25,
-    // Smooth, trendy — slides and zooms
-    transitions: ['slideleft', 'slideright', 'smoothleft', 'smoothright', 'zoomin'],
+    transitions: ['slideleft', 'slideright', 'smoothleft', 'smoothright', 'fade'],
     bpm: 120,
   },
   clean: {
     clipDur: 4.0,
     transDur: 0.40,
-    // Elegant, minimal — dissolves and fades only
     transitions: ['fade', 'fadeblack', 'dissolve'],
     bpm: 96,
   },
@@ -289,7 +287,7 @@ async function prepareAndConcatenate(
   // Single clip — skip concatenation
   if (segments.length === 1) return segments[0]
 
-  // Chain xfade transitions
+  // ── Try xfade transitions ────────────────────────────────────────────────
   onProgress(47, 'Assembling with transitions…')
 
   const inputs = segments.flatMap(s => ['-i', s])
@@ -299,7 +297,6 @@ async function prepareAndConcatenate(
 
   for (let i = 1; i < segments.length; i++) {
     const { transDur: td, transition } = scenes[i - 1]
-    // offset = point in the output timeline where this transition begins
     cumulativeOffset += scenes[i - 1].segDur - td
     const outLabel = i === segments.length - 1 ? '[vout]' : `[xf${i}]`
     filterParts.push(
@@ -315,6 +312,31 @@ async function prepareAndConcatenate(
     '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '26',
     'concat.mp4',
   )
+
+  // ── Check output exists — fall back to copy-concat if xfade failed ───────
+  let xfadeOk = false
+  try { xfadeOk = vfs(ffmpeg).read('concat.mp4').length > 0 } catch { /* ignore */ }
+
+  if (!xfadeOk) {
+    console.warn('[momentum] xfade failed — falling back to cut-only concat')
+    try { vfs(ffmpeg).rm('concat.mp4') } catch { /* ignore */ }
+
+    // Write a concat list for the demuxer-based cut-only join
+    const listContent = segments.map(s => `file '${s}'`).join('\n')
+    vfs(ffmpeg).write('concat_list.txt', new TextEncoder().encode(listContent))
+
+    await ffmpeg.run(
+      '-f', 'concat', '-safe', '0', '-i', 'concat_list.txt',
+      '-c', 'copy',
+      'concat.mp4',
+    )
+    vfs(ffmpeg).rm('concat_list.txt')
+
+    // If even the fallback failed, throw so the user gets a real error
+    let fallbackOk = false
+    try { fallbackOk = vfs(ffmpeg).read('concat.mp4').length > 0 } catch { /* ignore */ }
+    if (!fallbackOk) throw new Error('Failed to concatenate clips — check media files.')
+  }
 
   for (const s of segments) rm(s)
   return 'concat.mp4'
