@@ -20,10 +20,12 @@ import { CompilationOptions, MediaItem, Template } from '../types'
 
 // ─── Dimensions ───────────────────────────────────────────────────────────────
 
+// 720p keeps WASM memory usage well inside the 256 MB heap.
+// Still high-quality for all social platforms.
 const DIMENSIONS = {
-  '9:16': { w: 1080, h: 1920 },
-  '16:9': { w: 1920, h: 1080 },
-  '1:1':  { w: 1080, h: 1080 },
+  '9:16': { w: 720,  h: 1280 },
+  '16:9': { w: 1280, h: 720  },
+  '1:1':  { w: 720,  h: 720  },
 } as const
 
 // ─── Style rules ──────────────────────────────────────────────────────────────
@@ -319,6 +321,11 @@ async function prepareAndConcatenate(
 }
 
 // ─── Step 5: Text overlays ────────────────────────────────────────────────────
+//
+// FFmpeg.wasm has no system fonts, so drawtext always fails with
+// "No font filename provided". Instead we render text in the browser via
+// Canvas (which has all CSS fonts), export a PNG, then use FFmpeg's
+// overlay filter to composite it onto the video — no font files needed.
 
 function totalVideoDuration(scenes: Scene[]): number {
   return scenes.reduce((acc, scene, i) => {
@@ -326,46 +333,107 @@ function totalVideoDuration(scenes: Scene[]): number {
   }, 0)
 }
 
+/** Render `text` onto a transparent canvas and return the PNG bytes. */
+async function textToPng(
+  text: string,
+  width: number,
+  height: number,
+  position: 'center' | 'bottom',
+): Promise<Uint8Array> {
+  const canvas = document.createElement('canvas')
+  canvas.width  = width
+  canvas.height = height
+  const ctx = canvas.getContext('2d')!
+
+  const fontSize = Math.max(28, Math.round(width / 14))
+  ctx.font      = `bold ${fontSize}px Inter, system-ui, sans-serif`
+  ctx.textAlign = 'center'
+
+  // Legible drop-shadow
+  ctx.shadowColor   = 'rgba(0,0,0,0.85)'
+  ctx.shadowBlur    = 18
+  ctx.shadowOffsetY = 3
+  ctx.fillStyle     = 'white'
+
+  const x = width  / 2
+  const y = position === 'bottom' ? height * 0.83 : height * 0.50
+  ctx.fillText(text, x, y)
+
+  return new Promise<Uint8Array>((resolve) => {
+    canvas.toBlob(
+      (blob) => blob!.arrayBuffer().then((buf) => resolve(new Uint8Array(buf))),
+      'image/png',
+    )
+  })
+}
+
 async function applyTextOverlays(
   ffmpeg: ReturnType<typeof createFFmpeg>,
   videoName: string,
   options: CompilationOptions,
   scenes: Scene[],
+  dims: { w: number; h: number },
 ): Promise<string> {
-  const { rm } = vfs(ffmpeg)
+  const { write, read, rm } = vfs(ffmpeg)
   const hasIntro = !!options.introText?.trim()
   const hasOutro = !!options.outroText?.trim()
   if (!hasIntro && !hasOutro) return videoName
 
   const totalDur = totalVideoDuration(scenes)
-  const parts: string[] = []
+
+  // Build input list and overlay chain
+  const inputs: string[] = ['-i', videoName]
+  const overlayFiles: string[] = []
+  const filterParts: string[] = []
+  let lastStream = '[0:v]'
+  let inputIdx   = 1
 
   if (hasIntro) {
-    const text = options.introText!.replace(/'/g, "\\'").replace(/:/g, '\\:')
-    parts.push(
-      `drawtext=text='${text}':fontcolor=white:fontsize=72:` +
-      `x=(w-text_w)/2:y=(h-text_h)/2:enable='between(t,0,2.5)'`,
-    )
+    const png = await textToPng(options.introText!, dims.w, dims.h, 'center')
+    write('ol_intro.png', png)
+    overlayFiles.push('ol_intro.png')
+    inputs.push('-i', 'ol_intro.png')
+    const out = hasOutro ? '[ov0]' : '[vout]'
+    filterParts.push(`${lastStream}[${inputIdx}:v]overlay=0:0:enable='between(t,0,2.5)'${out}`)
+    lastStream = out
+    inputIdx++
   }
+
   if (hasOutro) {
-    const text = options.outroText!.replace(/'/g, "\\'").replace(/:/g, '\\:')
     const start = Math.max(0, totalDur - 2.5)
-    parts.push(
-      `drawtext=text='${text}':fontcolor=white:fontsize=72:` +
-      `x=(w-text_w)/2:y=(h-text_h)/2:` +
-      `enable='between(t,${start.toFixed(2)},${totalDur.toFixed(2)})'`,
+    const png = await textToPng(options.outroText!, dims.w, dims.h, 'bottom')
+    write('ol_outro.png', png)
+    overlayFiles.push('ol_outro.png')
+    inputs.push('-i', 'ol_outro.png')
+    filterParts.push(
+      `${lastStream}[${inputIdx}:v]overlay=0:0:enable='between(t,${start.toFixed(2)},${totalDur.toFixed(2)})'[vout]`,
     )
   }
 
   const outName = 'titled.mp4'
   await ffmpeg.run(
-    '-i', videoName,
-    '-vf', parts.join(','),
+    ...inputs,
+    '-filter_complex', filterParts.join(';'),
+    '-map', '[vout]',
     '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '26', '-an',
     outName,
   )
-  rm(videoName)
-  return outName
+
+  // Only swap files if FFmpeg actually wrote a non-empty output
+  try {
+    const check = read(outName)
+    if (check.length > 0) {
+      rm(videoName)
+      overlayFiles.forEach(rm)
+      return outName
+    }
+  } catch { /* fall through */ }
+
+  // Overlay step failed — continue without text rather than crashing
+  console.warn('[momentum] Text overlay failed — continuing without text overlays')
+  try { rm(outName) } catch { /* ignore */ }
+  overlayFiles.forEach((f) => { try { rm(f) } catch { /* ignore */ } })
+  return videoName
 }
 
 // ─── Step 6: Audio mixing ─────────────────────────────────────────────────────
@@ -376,7 +444,21 @@ async function mixAudio(
   musicFile: File,
   totalDur: number,
 ): Promise<string> {
-  const { write, rm } = vfs(ffmpeg)
+  const { write, read, rm } = vfs(ffmpeg)
+
+  // Guard: if the video file is empty (e.g. a prior step failed silently),
+  // skip audio mixing rather than feeding 0 bytes into the WASM heap.
+  try {
+    const check = read(videoName)
+    if (check.length === 0) {
+      console.warn('[momentum] mixAudio: input video is empty — skipping audio mix')
+      return videoName
+    }
+  } catch {
+    console.warn('[momentum] mixAudio: input video missing — skipping audio mix')
+    return videoName
+  }
+
   write('music_in', await fetchFile(musicFile))
 
   const fadeStart = Math.max(0, totalDur - 1.5)
@@ -450,7 +532,7 @@ export async function generateCompilation(
   // 4. Text overlays
   if (options.introText?.trim() || options.outroText?.trim()) {
     report(58, 'Adding text overlays…')
-    videoName = await applyTextOverlays(ffmpeg, videoName, options, scenes)
+    videoName = await applyTextOverlays(ffmpeg, videoName, options, scenes, dims)
   }
 
   // 5. Audio mix
