@@ -1,31 +1,27 @@
 import React, { useState } from 'react'
-import { HomeScreen } from './screens/HomeScreen'
-import { EditorScreen } from './screens/EditorScreen'
-import { PreviewScreen } from './screens/PreviewScreen'
+import { Header } from './components/Header'
+import { Sidebar } from './components/Sidebar'
+import { Canvas } from './components/Canvas'
 
-type Screen = 'home' | 'editor' | 'preview'
+export type AppView = 'idle' | 'generating' | 'done'
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>('home')
-  const [outputUrl, setOutputUrl] = useState<string>('')
+  const [view, setView] = useState<AppView>('idle')
+  const [outputUrl, setOutputUrl] = useState('')
 
   return (
-    <>
-      {screen === 'home' && (
-        <HomeScreen onStart={() => setScreen('editor')} />
-      )}
-      {screen === 'editor' && (
-        <EditorScreen
-          onBack={() => setScreen('home')}
-          onDone={(url) => { setOutputUrl(url); setScreen('preview') }}
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+      <Header outputUrl={outputUrl} />
+
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar
+          view={view}
+          onGenerating={() => setView('generating')}
+          onDone={(url) => { setOutputUrl(url); setView('done') }}
+          onReset={() => { setOutputUrl(''); setView('idle') }}
         />
-      )}
-      {screen === 'preview' && (
-        <PreviewScreen
-          outputUrl={outputUrl}
-          onCreateAnother={() => setScreen('home')}
-        />
-      )}
-    </>
+        <Canvas view={view} outputUrl={outputUrl} />
+      </div>
+    </div>
   )
 }

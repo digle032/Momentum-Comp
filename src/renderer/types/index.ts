@@ -23,7 +23,5 @@ export interface CompilationOptions {
 export interface GenerationState {
   status: 'idle' | 'analyzing' | 'rendering' | 'done' | 'error'
   progress: number
-  previewUrl?: string
-  outputUrl?: string
-  error?: string
+  error?: string  // doubles as status label during rendering
 }

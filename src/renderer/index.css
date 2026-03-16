@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Dancing+Script:wght@500;600&family=Inter:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body, #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    @apply bg-background text-umber font-sans;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-umber/20 rounded-full; }
+}
+
+@layer components {
+  .glass-panel {
+    background: rgba(252, 244, 239, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .btn-primary {
+    @apply bg-accent text-white font-sans font-semibold rounded-xl px-5 py-3
+           shadow-ios active:scale-[0.98]
+           transition-all duration-100 cursor-pointer select-none
+           disabled:opacity-40 disabled:cursor-not-allowed;
+    box-shadow: 0 2px 8px rgba(74,46,38,0.10), inset 0 1px 0 rgba(255,255,255,0.6);
+  }
+
+  .btn-primary:active {
+    box-shadow: 0 1px 3px rgba(74,46,38,0.15), inset 0 2px 4px rgba(0,0,0,0.08);
+  }
+
+  .btn-ghost {
+    @apply text-umber/70 font-sans font-medium rounded-xl px-4 py-2
+           transition-colors duration-100 cursor-pointer select-none;
+  }
+
+  .btn-ghost:hover {
+    background: rgba(74, 46, 38, 0.05);
+  }
+
+  .chip {
+    @apply px-4 py-1.5 rounded-full border text-sm font-medium font-sans
+           cursor-pointer transition-all duration-100 select-none;
+  }
+
+  .chip-inactive {
+    @apply border-border text-umber/60;
+  }
+
+  .chip-inactive:hover {
+    @apply border-umber/30;
+  }
+
+  .chip-active {
+    @apply border-accent bg-accent/10 text-accent;
+  }
+
+  .media-thumb {
+    @apply rounded-xl overflow-hidden border-2 border-transparent
+           cursor-pointer transition-all duration-150 relative;
+  }
+
+  .media-thumb-selected {
+    @apply border-accent shadow-md;
+  }
+}

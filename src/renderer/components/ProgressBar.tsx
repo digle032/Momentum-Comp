@@ -1,5 +1,4 @@
 import React from 'react'
-import { theme } from '../styles/theme'
 
 interface ProgressBarProps {
   progress: number
@@ -7,38 +6,17 @@ interface ProgressBarProps {
 }
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({ progress, label }) => (
-  <div>
+  <div className="w-full">
     {label && (
-      <p style={{
-        fontSize: 13,
-        color: theme.colors.textSecondary,
-        marginBottom: 8,
-        fontFamily: theme.typography.fontFamily,
-      }}>
-        {label}
-      </p>
+      <p className="text-xs text-umber/50 font-sans mb-2 text-center">{label}</p>
     )}
-    <div style={{
-      height: 6,
-      borderRadius: theme.radii.full,
-      background: theme.colors.border,
-      overflow: 'hidden',
-    }}>
-      <div style={{
-        height: '100%',
-        width: `${Math.min(100, Math.max(0, progress))}%`,
-        background: theme.colors.primary,
-        borderRadius: theme.radii.full,
-        transition: 'width 0.3s ease',
-      }} />
+    <div className="h-1.5 bg-umber/10 rounded-full overflow-hidden">
+      <div
+        className="h-full bg-accent rounded-full transition-all duration-300 ease-out"
+        style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+      />
     </div>
-    <p style={{
-      fontSize: 12,
-      color: theme.colors.textSecondary,
-      marginTop: 4,
-      textAlign: 'right',
-      fontFamily: theme.typography.fontFamily,
-    }}>
+    <p className="text-xs text-umber/40 font-sans mt-2 text-right tabular-nums">
       {Math.round(progress)}%
     </p>
   </div>
