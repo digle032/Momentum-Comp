@@ -18,7 +18,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({ view, outputUrl }) =
   // Done: show video player
   if (view === 'done' && outputUrl) {
     return (
-      <main className="flex-1 bg-background flex items-center justify-center p-8 overflow-hidden">
+      <main className="flex-1 flex items-center justify-center p-8 overflow-hidden bg-transparent">
         <video
           src={outputUrl}
           controls
@@ -37,7 +37,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({ view, outputUrl }) =
   // Error state
   if (generation.status === 'error') {
     return (
-      <main className="flex-1 flex items-center justify-center bg-background">
+      <main className="flex-1 flex items-center justify-center bg-transparent">
         <GlowingCard className="max-w-[360px] w-full text-center p-8">
           <AlertCircle size={28} className="text-destructive mx-auto mb-3" />
           <h2 className="font-serif text-xl text-foreground">Generation failed</h2>
@@ -53,7 +53,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({ view, outputUrl }) =
   // Generating: show progress
   if (view === 'generating') {
     return (
-      <main className="flex-1 flex items-center justify-center bg-background">
+      <main className="flex-1 flex items-center justify-center bg-transparent">
         <div className="text-center max-w-sm w-full px-8">
           <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-6">
             <Zap size={30} className="text-accent animate-pulse" />
@@ -76,12 +76,12 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({ view, outputUrl }) =
                                { w: 400, h: 225 }
 
     return (
-      <main className="flex-1 flex flex-col items-center justify-center bg-background gap-6">
+      <main className="flex-1 flex flex-col items-center justify-center bg-transparent gap-6">
         <div
-          className="rounded-2xl border-2 border-dashed border-accent/20 bg-accent/5 flex flex-col items-center justify-center gap-3 shadow-card animate-breathe"
+          className="rounded-2xl border-2 border-dashed border-border bg-muted/60 backdrop-blur-panel flex flex-col items-center justify-center gap-3 shadow-card animate-breathe"
           style={{ width: dims.w, height: dims.h }}
         >
-          <Film size={28} className="text-accent/30" />
+          <Film size={28} className="text-accent/50" />
           <span className="font-sans text-xs text-muted-foreground font-medium">{aspectRatio}</span>
           <span className="font-sans text-xs text-muted-foreground">
             {selectedMedia.length} clip{selectedMedia.length !== 1 ? 's' : ''}
@@ -96,7 +96,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({ view, outputUrl }) =
 
   // Empty state with ContainerScroll
   return (
-    <main className="flex-1 flex items-center justify-center bg-background overflow-hidden">
+    <main className="flex-1 flex items-center justify-center bg-transparent overflow-hidden">
       <ContainerScroll
         titleComponent={
           <div className="text-center">
@@ -110,7 +110,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({ view, outputUrl }) =
           </div>
         }
       >
-        <div className="w-full h-full bg-muted rounded-2xl flex items-center justify-center">
+        <div className="w-full h-full bg-muted/60 backdrop-blur-panel rounded-2xl flex items-center justify-center">
           <MomentumLogo size={80} />
         </div>
       </ContainerScroll>
