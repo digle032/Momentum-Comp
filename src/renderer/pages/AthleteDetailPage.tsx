@@ -5,6 +5,7 @@ import { GlowingCard } from '../components/ui/GlowingCard'
 import { useCoachingStore } from '../store/coachingStore'
 import { TrainingSession } from '../types'
 import { AppPage } from '../components/MainSidebar'
+import { getAvatarUrl } from '../lib/utils'
 
 interface AthleteDetailPageProps {
   athleteId: string
@@ -65,7 +66,7 @@ export const AthleteDetailPage: React.FC<AthleteDetailPageProps> = ({
             alt={athlete.name}
             className="w-16 h-16 rounded-full border-2 border-accent/30 object-cover shrink-0"
             onError={(e) => {
-              ;(e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(athlete.name)}&background=1e2a3a&color=00f5d4`
+              ;(e.target as HTMLImageElement).src = getAvatarUrl(athlete.name)
             }}
           />
           <div className="flex-1">

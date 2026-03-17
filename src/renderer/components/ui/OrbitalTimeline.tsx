@@ -1,154 +1,236 @@
-import React, { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { cn } from '../../lib/utils'
-import { Calendar, CheckCircle2, Clock, User, Film } from 'lucide-react'
+import { useState, useEffect, useRef } from "react";
+import { ArrowRight, Link, Zap, Calendar, Film, Clock, Users, CheckCircle2 } from "lucide-react";
 
-export interface OrbitalItem {
-  id: string
-  title: string
-  date: string
-  type: 'session' | 'compilation' | 'milestone'
-  isCompleted?: boolean
-  assignedTo?: string
+interface TimelineItem {
+  id: number;
+  title: string;
+  date: string;
+  content: string;
+  category: string;
+  icon: React.ElementType;
+  relatedIds: number[];
+  status: "completed" | "in-progress" | "pending";
+  energy: number;
 }
 
-interface OrbitalTimelineProps {
-  items: OrbitalItem[]
-  className?: string
+interface RadialOrbitalTimelineProps {
+  timelineData: TimelineItem[];
 }
 
-export const OrbitalTimeline: React.FC<OrbitalTimelineProps> = ({ items, className }) => {
-  const [selectedId, setSelectedId] = useState<string>(items[0]?.id ?? '')
-  const [rotation, setRotation] = useState(0)
+export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTimelineProps) {
+  const [expandedItems, setExpandedItems] = useState<Record<number, boolean>>({});
+  const [rotationAngle, setRotationAngle] = useState<number>(0);
+  const [autoRotate, setAutoRotate] = useState<boolean>(true);
+  const [pulseEffect, setPulseEffect] = useState<Record<number, boolean>>({});
+  const [centerOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [activeNodeId, setActiveNodeId] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const orbitRef = useRef<HTMLDivElement>(null);
+  const nodeRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
-  const displayItems = items.slice(0, 10)
-  const selectedItem = displayItems.find((i) => i.id === selectedId)
+  const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === containerRef.current || e.target === orbitRef.current) {
+      setExpandedItems({});
+      setActiveNodeId(null);
+      setPulseEffect({});
+      setAutoRotate(true);
+    }
+  };
+
+  const toggleItem = (id: number) => {
+    setExpandedItems((prev) => {
+      const newState = { ...prev };
+      Object.keys(newState).forEach((key) => {
+        if (parseInt(key) !== id) newState[parseInt(key)] = false;
+      });
+      newState[id] = !prev[id];
+      if (!prev[id]) {
+        setActiveNodeId(id);
+        setAutoRotate(false);
+        const relatedItems = getRelatedItems(id);
+        const newPulse: Record<number, boolean> = {};
+        relatedItems.forEach((relId) => { newPulse[relId] = true; });
+        setPulseEffect(newPulse);
+        const nodeIndex = timelineData.findIndex((item) => item.id === id);
+        const targetAngle = (nodeIndex / timelineData.length) * 360;
+        setRotationAngle(270 - targetAngle);
+      } else {
+        setActiveNodeId(null);
+        setAutoRotate(true);
+        setPulseEffect({});
+      }
+      return newState;
+    });
+  };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setRotation((r) => r + 0.05)
-    }, 50)
-    return () => clearInterval(interval)
-  }, [])
+    if (!autoRotate) return;
+    const timer = setInterval(() => {
+      setRotationAngle((prev) => Number(((prev + 0.3) % 360).toFixed(3)));
+    }, 50);
+    return () => clearInterval(timer);
+  }, [autoRotate]);
 
-  const radius = 160
-  const centerX = 220
-  const centerY = 220
+  const calculateNodePosition = (index: number, total: number) => {
+    const angle = ((index / total) * 360 + rotationAngle) % 360;
+    const radius = 220;
+    const radian = (angle * Math.PI) / 180;
+    const x = radius * Math.cos(radian) + centerOffset.x;
+    const y = radius * Math.sin(radian) + centerOffset.y;
+    const zIndex = Math.round(100 + 50 * Math.cos(radian));
+    const opacity = Math.max(0.4, Math.min(1, 0.4 + 0.6 * ((1 + Math.sin(radian)) / 2)));
+    return { x, y, zIndex, opacity };
+  };
+
+  const getRelatedItems = (itemId: number): number[] => {
+    const item = timelineData.find((i) => i.id === itemId);
+    return item ? item.relatedIds : [];
+  };
+
+  const isRelatedToActive = (itemId: number): boolean => {
+    if (!activeNodeId) return false;
+    return getRelatedItems(activeNodeId).includes(itemId);
+  };
+
+  const getStatusStyles = (status: TimelineItem["status"]): string => {
+    switch (status) {
+      case "completed": return "text-white bg-black border-white";
+      case "in-progress": return "text-black bg-white border-black";
+      default: return "text-white bg-black/40 border-white/50";
+    }
+  };
 
   return (
     <div
-      className={cn('relative flex items-center justify-center', className)}
-      style={{ width: 440, height: 440 }}
+      className="w-full h-full flex flex-col items-center justify-center overflow-hidden"
+      ref={containerRef}
+      onClick={handleContainerClick}
     >
-      {/* Rings */}
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 440 440">
-        <circle
-          cx={centerX}
-          cy={centerY}
-          r={radius}
-          fill="none"
-          stroke="hsl(216, 34%, 17%)"
-          strokeWidth="1"
-          strokeDasharray="4 8"
-        />
-        <circle
-          cx={centerX}
-          cy={centerY}
-          r={radius * 0.6}
-          fill="none"
-          stroke="hsl(216, 34%, 17%)"
-          strokeWidth="1"
-          opacity="0.5"
-        />
-        <circle
-          cx={centerX}
-          cy={centerY}
-          r={radius * 0.3}
-          fill="none"
-          stroke="hsl(216, 34%, 17%)"
-          strokeWidth="1"
-          opacity="0.25"
-        />
-      </svg>
+      <div className="relative w-full h-full flex items-center justify-center">
+        <div
+          className="absolute w-full h-full flex items-center justify-center"
+          ref={orbitRef}
+          style={{ perspective: "1000px", transform: `translate(${centerOffset.x}px, ${centerOffset.y}px)` }}
+        >
+          {/* Center hub */}
+          <div className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 via-blue-500 to-teal-500 animate-pulse flex items-center justify-center z-10">
+            <div className="absolute w-20 h-20 rounded-full border border-white/20 animate-ping opacity-70"></div>
+            <div className="absolute w-24 h-24 rounded-full border border-white/10 animate-ping opacity-50" style={{ animationDelay: "0.5s" }}></div>
+            <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-md"></div>
+          </div>
 
-      {/* Orbital nodes */}
-      {displayItems.map((item, i) => {
-        const angle = ((i / displayItems.length) * 360 + rotation) * (Math.PI / 180)
-        const x = centerX + radius * Math.cos(angle)
-        const y = centerY + radius * Math.sin(angle)
-        const isSelected = item.id === selectedId
+          {/* Orbit ring */}
+          <div className="absolute w-[440px] h-[440px] rounded-full border border-white/10"></div>
 
-        return (
-          <motion.button
-            key={item.id}
-            className={cn(
-              'absolute w-9 h-9 rounded-full border-2 flex items-center justify-center transition-colors duration-300 cursor-pointer',
-              isSelected
-                ? 'border-accent bg-accent/20 shadow-glow scale-125'
-                : 'border-border bg-muted hover:border-accent/50 hover:bg-accent/5'
-            )}
-            style={{ left: x - 18, top: y - 18 }}
-            onClick={() => setSelectedId(item.id)}
-            whileHover={{ scale: isSelected ? 1.25 : 1.15 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            {item.type === 'session' && (
-              <Calendar size={13} className={isSelected ? 'text-accent' : 'text-muted-foreground'} />
-            )}
-            {item.type === 'compilation' && (
-              <Film size={13} className={isSelected ? 'text-accent' : 'text-muted-foreground'} />
-            )}
-            {item.type === 'milestone' && (
-              <Clock size={13} className={isSelected ? 'text-accent' : 'text-muted-foreground'} />
-            )}
-            {item.isCompleted && (
-              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-positive flex items-center justify-center">
-                <CheckCircle2 size={8} className="text-background" />
-              </span>
-            )}
-          </motion.button>
-        )
-      })}
+          {/* Nodes */}
+          {timelineData.map((item, index) => {
+            const position = calculateNodePosition(index, timelineData.length);
+            const isExpanded = expandedItems[item.id];
+            const isRelated = isRelatedToActive(item.id);
+            const isPulsing = pulseEffect[item.id];
+            const Icon = item.icon;
 
-      {/* Center hub */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <AnimatePresence mode="wait">
-          {selectedItem && (
-            <motion.div
-              key={selectedItem.id}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="w-40 h-40 rounded-full bg-muted border border-border flex flex-col items-center justify-center text-center p-4 shadow-card"
-            >
-              <span className="text-[10px] text-accent font-mono uppercase tracking-widest mb-1">
-                {selectedItem.type}
-              </span>
-              <p className="text-xs font-semibold text-foreground leading-tight line-clamp-2">
-                {selectedItem.title}
-              </p>
-              <p className="text-[10px] text-muted-foreground mt-1">
-                {new Date(selectedItem.date).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                })}
-              </p>
-              {selectedItem.assignedTo && (
-                <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
-                  <User size={8} />
-                  {selectedItem.assignedTo}
-                </p>
-              )}
-              {selectedItem.isCompleted && (
-                <span className="mt-1.5 text-[9px] text-accent font-mono uppercase tracking-widest">
-                  ✓ Done
-                </span>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+            return (
+              <div
+                key={item.id}
+                ref={(el) => (nodeRefs.current[item.id] = el)}
+                className="absolute transition-all duration-700 cursor-pointer"
+                style={{
+                  transform: `translate(${position.x}px, ${position.y}px)`,
+                  zIndex: isExpanded ? 200 : position.zIndex,
+                  opacity: isExpanded ? 1 : position.opacity,
+                }}
+                onClick={(e) => { e.stopPropagation(); toggleItem(item.id); }}
+              >
+                {/* Energy glow */}
+                <div
+                  className={`absolute rounded-full -inset-1 ${isPulsing ? "animate-pulse" : ""}`}
+                  style={{
+                    background: `radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%)`,
+                    width: `${item.energy * 0.5 + 40}px`,
+                    height: `${item.energy * 0.5 + 40}px`,
+                    left: `-${(item.energy * 0.5) / 2}px`,
+                    top: `-${(item.energy * 0.5) / 2}px`,
+                  }}
+                />
+
+                {/* Node circle */}
+                <div className={`
+                  w-10 h-10 rounded-full flex items-center justify-center border-2
+                  transition-all duration-300 transform
+                  ${isExpanded ? "bg-white text-black border-white shadow-lg shadow-white/30 scale-150"
+                    : isRelated ? "bg-white/50 text-black border-white animate-pulse"
+                    : "bg-black text-white border-white/40"}
+                `}>
+                  <Icon size={16} />
+                </div>
+
+                {/* Label */}
+                <div className={`
+                  absolute top-12 whitespace-nowrap text-xs font-semibold tracking-wider
+                  transition-all duration-300
+                  ${isExpanded ? "text-white scale-125" : "text-white/70"}
+                `}>
+                  {item.title}
+                </div>
+
+                {/* Expanded card */}
+                {isExpanded && (
+                  <div className="absolute top-20 left-1/2 -translate-x-1/2 w-64 bg-black/90 backdrop-blur-lg border border-white/30 shadow-xl shadow-white/10 rounded-lg overflow-visible">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-px h-3 bg-white/50"></div>
+                    <div className="p-4 pb-2">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className={`px-2 py-0.5 text-xs font-semibold rounded-full border ${getStatusStyles(item.status)}`}>
+                          {item.status === "completed" ? "COMPLETE" : item.status === "in-progress" ? "IN PROGRESS" : "PENDING"}
+                        </span>
+                        <span className="text-xs font-mono text-white/50">{item.date}</span>
+                      </div>
+                      <h3 className="text-sm font-bold text-white mb-1">{item.title}</h3>
+                    </div>
+                    <div className="px-4 pb-4 text-xs text-white/80">
+                      <p>{item.content}</p>
+                      <div className="mt-3 pt-3 border-t border-white/10">
+                        <div className="flex justify-between items-center text-xs mb-1">
+                          <span className="flex items-center gap-1"><Zap size={10} /> Intensity</span>
+                          <span className="font-mono">{item.energy}%</span>
+                        </div>
+                        <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-cyan-500 to-teal-500" style={{ width: `${item.energy}%` }} />
+                        </div>
+                      </div>
+                      {item.relatedIds.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-white/10">
+                          <div className="flex items-center gap-1 mb-2">
+                            <Link size={10} className="text-white/70" />
+                            <span className="text-xs uppercase tracking-wider text-white/70">Connected</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {item.relatedIds.map((relId) => {
+                              const rel = timelineData.find((i) => i.id === relId);
+                              return (
+                                <button
+                                  key={relId}
+                                  className="flex items-center h-6 px-2 text-xs border border-white/20 bg-transparent hover:bg-white/10 text-white/80 hover:text-white transition-all rounded"
+                                  onClick={(e) => { e.stopPropagation(); toggleItem(relId); }}
+                                >
+                                  {rel?.title} <ArrowRight size={8} className="ml-1 text-white/60" />
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
-  )
+  );
 }
+
+export { RadialOrbitalTimeline };
+export type { TimelineItem as OrbitalItem };

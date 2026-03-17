@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import { Download, Share2 } from 'lucide-react'
-import MomentumLogo from './MomentumLogo'
+import rabbitLogo from '../assets/rabbit-logo.png'
 
 interface HeaderProps {
   outputUrl: string
@@ -27,7 +27,7 @@ export const Header: React.FC<HeaderProps> = ({ outputUrl }) => {
     <header className="h-14 flex items-center justify-between px-6 border-b border-border glass-panel shrink-0 z-10">
       {/* Logo */}
       <div className="flex items-center gap-2.5">
-        <MomentumLogo size={36} />
+        <img src={rabbitLogo} alt="Momentum" style={{ height: 36, width: 'auto' }} />
         <span className="font-serif text-xl text-umber tracking-tight">Momentum</span>
       </div>
 

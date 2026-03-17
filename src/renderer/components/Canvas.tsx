@@ -3,7 +3,7 @@ import { Film, Zap, AlertCircle } from 'lucide-react'
 type AppView = 'idle' | 'generating' | 'done'
 import { useCompilationStore } from '../store/compilationStore'
 import { ProgressBar } from './ProgressBar'
-import MomentumLogo from './MomentumLogo'
+import rabbitLogo from '../assets/rabbit-logo.png'
 import { GlowingCard } from './ui/GlowingCard'
 
 interface CanvasProps {
@@ -94,7 +94,7 @@ export const Canvas: React.FC<CanvasProps> = ({ view, outputUrl }) => {
           className="rounded-3xl border-2 border-dashed border-umber/20 flex flex-col items-center justify-center gap-6 py-12 px-8 mb-2 animate-breathe"
         >
           <div className="flex items-center justify-center">
-            <MomentumLogo size={80} />
+            <img src={rabbitLogo} alt="Momentum" style={{ height: 80, width: 'auto' }} />
           </div>
           <div>
             <h1 className="font-serif text-4xl text-umber mb-3 leading-tight">

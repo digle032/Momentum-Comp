@@ -3,7 +3,7 @@ import { Film, Zap, AlertCircle } from 'lucide-react'
 import { StudioView } from './StudioSidebar'
 import { useCompilationStore } from '../store/compilationStore'
 import { ProgressBar } from './ProgressBar'
-import MomentumLogo from './MomentumLogo'
+import rabbitLogo from '../assets/rabbit-logo.png'
 import { GlowingCard } from './ui/GlowingCard'
 import { ContainerScroll } from './ui/ContainerScroll'
 
@@ -111,7 +111,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({ view, outputUrl }) =
         }
       >
         <div className="w-full h-full bg-muted/60 backdrop-blur-panel rounded-2xl flex items-center justify-center">
-          <MomentumLogo size={80} />
+          <img src={rabbitLogo} alt="Momentum" style={{ height: 80, width: 'auto' }} />
         </div>
       </ContainerScroll>
     </main>

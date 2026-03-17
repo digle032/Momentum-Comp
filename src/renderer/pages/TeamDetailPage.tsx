@@ -5,6 +5,7 @@ import { GlowingCard } from '../components/ui/GlowingCard'
 import { useCoachingStore } from '../store/coachingStore'
 import { TrainingSession } from '../types'
 import { AppPage } from '../components/MainSidebar'
+import { getAvatarUrl } from '../lib/utils'
 
 interface TeamDetailPageProps {
   teamId: string
@@ -92,7 +93,7 @@ export const TeamDetailPage: React.FC<TeamDetailPageProps> = ({
                             className="w-5 h-5 rounded-full object-cover border border-border"
                             alt=""
                             onError={(e) => {
-                              ;(e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(a.name)}&background=1e2a3a&color=00f5d4&size=20`
+                              ;(e.target as HTMLImageElement).src = getAvatarUrl(a.name, 20)
                             }}
                           />
                           <span className="truncate">{a.name}</span>
@@ -117,7 +118,7 @@ export const TeamDetailPage: React.FC<TeamDetailPageProps> = ({
                         alt={a.name}
                         className="w-8 h-8 rounded-full border border-border object-cover shrink-0"
                         onError={(e) => {
-                          ;(e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(a.name)}&background=1e2a3a&color=00f5d4&size=32`
+                          ;(e.target as HTMLImageElement).src = getAvatarUrl(a.name, 32)
                         }}
                       />
                       <div className="flex-1 min-w-0">

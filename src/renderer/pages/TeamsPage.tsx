@@ -4,6 +4,7 @@ import { Plus, X, Shield } from 'lucide-react'
 import { GlowingCard } from '../components/ui/GlowingCard'
 import { useCoachingStore } from '../store/coachingStore'
 import { Team } from '../types'
+import { getAvatarUrl } from '../lib/utils'
 
 interface TeamsPageProps {
   onViewTeam: (id: string) => void
@@ -150,7 +151,7 @@ export const TeamsPage: React.FC<TeamsPageProps> = ({ onViewTeam }) => {
                               title={a.name}
                               className="w-7 h-7 rounded-full border border-border object-cover -ml-1 first:ml-0"
                               onError={(e) => {
-                                ;(e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(a.name)}&background=1e2a3a&color=00f5d4&size=28`
+                                ;(e.target as HTMLImageElement).src = getAvatarUrl(a.name, 28)
                               }}
                             />
                           ))}

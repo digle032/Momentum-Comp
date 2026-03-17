@@ -1,6 +1,6 @@
 import React from 'react'
 import { GlowingCard } from './ui/GlowingCard'
-import MomentumLogo from './MomentumLogo'
+import rabbitLogo from '../assets/rabbit-logo.png'
 
 interface ErrorBoundaryState {
   hasError: boolean
@@ -22,7 +22,7 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren, Erro
         <div className="h-screen bg-background flex items-center justify-center">
           <GlowingCard className="max-w-[400px] w-full text-center p-8">
             <div className="flex justify-center mb-4">
-              <MomentumLogo size={40} />
+              <img src={rabbitLogo} alt="Momentum" style={{ height: 40, width: 'auto' }} />
             </div>
             <h2 className="font-serif text-2xl text-foreground mb-2">Something went wrong</h2>
             <p className="font-sans text-sm text-muted-foreground mb-6">

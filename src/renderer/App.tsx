@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { AuthPage } from './pages/AuthPage'
 import { AppLayout } from './components/AppLayout'
 import { AppPage } from './components/MainSidebar'
 import { Dashboard } from './pages/Dashboard'
@@ -8,11 +9,13 @@ import { TeamsPage } from './pages/TeamsPage'
 import { TeamDetailPage } from './pages/TeamDetailPage'
 import { CalendarPage } from './pages/CalendarPage'
 import { StudioPage } from './pages/StudioPage'
+import { SettingsPage } from './pages/SettingsPage'
 import { AddAthleteModal } from './components/AddAthleteModal'
 import { SessionModal } from './components/SessionModal'
 import { TrainingSession } from './types'
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [activePage, setActivePage] = useState<AppPage>('dashboard')
 
   // Sub-navigation for Athletes and Teams
@@ -25,9 +28,12 @@ export default function App() {
   const [editSession, setEditSession] = useState<TrainingSession | null>(null)
   const [newSessionDate, setNewSessionDate] = useState<string>('')
 
+  if (!isAuthenticated) {
+    return <AuthPage onAuth={() => setIsAuthenticated(true)} />
+  }
+
   const handleNavigate = (page: AppPage) => {
     setActivePage(page)
-    // Clear sub-navigation on page change
     if (page !== 'athletes') setSelectedAthleteId(null)
     if (page !== 'teams') setSelectedTeamId(null)
   }
@@ -52,6 +58,11 @@ export default function App() {
     setSessionModalOpen(false)
     setEditSession(null)
     setNewSessionDate('')
+  }
+
+  const handleLogout = () => {
+    setIsAuthenticated(false)
+    setActivePage('dashboard')
   }
 
   const renderPage = () => {
@@ -101,6 +112,9 @@ export default function App() {
 
       case 'studio':
         return <StudioPage />
+
+      case 'settings':
+        return <SettingsPage onLogout={handleLogout} />
 
       default:
         return null

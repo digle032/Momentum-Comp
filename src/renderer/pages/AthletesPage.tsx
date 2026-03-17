@@ -4,6 +4,7 @@ import { Search, UserPlus } from 'lucide-react'
 import { GlowingCard } from '../components/ui/GlowingCard'
 import { useCoachingStore } from '../store/coachingStore'
 import { Athlete } from '../types'
+import { getAvatarUrl } from '../lib/utils'
 
 interface AthletesPageProps {
   onViewAthlete: (id: string) => void
@@ -101,7 +102,7 @@ const AthleteCard: React.FC<AthleteCardProps> = ({ athlete, index, onView }) => 
           alt={athlete.name}
           className="w-14 h-14 rounded-full border-2 border-border object-cover shrink-0"
           onError={(e) => {
-            ;(e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(athlete.name)}&background=1e2a3a&color=00f5d4`
+            ;(e.target as HTMLImageElement).src = getAvatarUrl(athlete.name)
           }}
         />
         <div className="flex-1 min-w-0">

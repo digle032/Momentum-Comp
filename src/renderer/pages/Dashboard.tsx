@@ -2,9 +2,10 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Zap, UserPlus, Camera, CheckCircle2, Clock, Users, Calendar, Film, TrendingUp } from 'lucide-react'
 import { GlowingCard } from '../components/ui/GlowingCard'
-import { OrbitalTimeline, OrbitalItem } from '../components/ui/OrbitalTimeline'
+import RadialOrbitalTimeline from '../components/ui/OrbitalTimeline'
 import { useCoachingStore } from '../store/coachingStore'
 import { AppPage } from '../components/MainSidebar'
+import { getAvatarUrl } from '../lib/utils'
 
 interface DashboardProps {
   onNavigate: (page: AppPage) => void
@@ -30,24 +31,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onAddAthlete, 
 
   const recentAthlete = athletes[athletes.length - 1]
 
-  const orbitalItems: OrbitalItem[] = sessions
-    .slice()
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 10)
-    .map((s) => {
-      const assigned =
-        s.assignedTo.type === 'athlete'
-          ? athletes.find((a) => a.id === s.assignedTo.id)?.name
-          : teams.find((t) => t.id === s.assignedTo.id)?.name
-      return {
-        id: s.id,
-        title: s.title,
-        date: s.date,
-        type: 'session' as const,
-        isCompleted: s.isCompleted,
-        assignedTo: assigned,
-      }
-    })
+  const orbitalData = [
+    { id: 1, title: "Morning Drills", date: "Mar 17", content: "Speed and agility circuit with the full squad.", category: "Session", icon: Zap, relatedIds: [2, 3], status: "completed" as const, energy: 95 },
+    { id: 2, title: "Strength Block", date: "Mar 17", content: "Lower body compound lifts — squats, deadlifts, lunges.", category: "Session", icon: Clock, relatedIds: [1], status: "completed" as const, energy: 80 },
+    { id: 3, title: "Hype Reel", date: "Mar 16", content: "Compilation generated from last week's highlight clips.", category: "Compilation", icon: Film, relatedIds: [1], status: "completed" as const, energy: 100 },
+    { id: 4, title: "Team Review", date: "Mar 18", content: "Tactical review session with the full roster.", category: "Team", icon: Users, relatedIds: [5], status: "in-progress" as const, energy: 60 },
+    { id: 5, title: "Recovery", date: "Mar 19", content: "Active recovery — mobility, stretching, breathwork.", category: "Session", icon: Calendar, relatedIds: [4], status: "pending" as const, energy: 40 },
+    { id: 6, title: "Sprint Test", date: "Mar 20", content: "40m sprint assessments for all athletes.", category: "Session", icon: CheckCircle2, relatedIds: [1, 2], status: "pending" as const, energy: 70 },
+  ]
 
   const greetingHour = today.getHours()
   const greeting =
@@ -154,37 +145,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onAddAthlete, 
           {...fadeIn}
           transition={{ duration: 0.4, delay: 0.1, ease }}
         >
-          <GlowingCard className="p-5 h-full">
+          <GlowingCard className="p-5 h-full min-h-[520px]">
             <div className="flex items-center justify-between mb-2">
               <h2 className="font-serif text-lg text-foreground">Activity Timeline</h2>
             </div>
-            <div className="flex flex-col items-center">
-              {orbitalItems.length > 0 ? (
-                <>
-                  <OrbitalTimeline items={orbitalItems} />
-                  <div className="flex items-center gap-5 mt-2">
-                    <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                      <span className="w-2 h-2 rounded-full bg-border border border-border" />
-                      Upcoming
-                    </span>
-                    <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                      <span className="w-2 h-2 rounded-full bg-accent/30 border border-accent/50" />
-                      Selected
-                    </span>
-                    <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                      <span className="w-2.5 h-2.5 rounded-full bg-accent flex items-center justify-center">
-                        <CheckCircle2 size={6} className="text-accent-foreground" />
-                      </span>
-                      Completed
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
-                  <Clock size={28} className="text-muted-foreground animate-breathe" />
-                  <p className="text-muted-foreground text-sm">No sessions yet. Create your first session to get started.</p>
-                </div>
-              )}
+            <div className="w-full h-[520px]">
+              <RadialOrbitalTimeline timelineData={orbitalData} />
             </div>
           </GlowingCard>
         </motion.div>
@@ -206,7 +172,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onAddAthlete, 
                   src={recentAthlete.avatarUrl}
                   alt={recentAthlete.name}
                   className="w-16 h-16 rounded-full border-2 border-accent/30 object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(recentAthlete.name)}&background=1e2a3a&color=00f5d4` }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = getAvatarUrl(recentAthlete.name) }}
                 />
                 <div>
                   <p className="font-serif text-base text-foreground">{recentAthlete.name}</p>

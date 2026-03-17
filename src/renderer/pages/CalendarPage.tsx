@@ -75,14 +75,12 @@ export const CalendarPage: React.FC = () => {
           eventPropGetter={(event) => ({
             style: {
               backgroundColor: (event as CalendarEvent).resource.isCompleted
-                ? 'rgba(52, 211, 153, 0.15)'
-                : 'rgba(0, 245, 212, 0.12)',
+                ? 'var(--accent-10)'
+                : 'var(--accent-12)',
               borderColor: (event as CalendarEvent).resource.isCompleted
-                ? 'rgba(52, 211, 153, 0.5)'
-                : 'rgba(0, 245, 212, 0.4)',
-              color: (event as CalendarEvent).resource.isCompleted
-                ? 'rgb(52, 211, 153)'
-                : 'hsl(173, 98%, 50%)',
+                ? 'var(--accent-40)'
+                : 'var(--accent-40)',
+              color: 'var(--color-accent)',
               fontSize: '11px',
               borderRadius: '6px',
               border: '1px solid',

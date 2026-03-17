@@ -8,10 +8,10 @@ export default {
         foreground:          'hsl(213, 31%, 91%)',
         muted:               'hsl(223, 47%, 11%)',
         'muted-foreground':  'hsl(215, 25%, 65%)',
-        accent:              'hsl(170, 80%, 45%)',
+        accent:              'hsl(173, 98%, 50%)',
         'accent-foreground': 'hsl(224, 71%, 4%)',
         border:              'hsl(216, 34%, 17%)',
-        ring:                'hsl(170, 80%, 45%)',
+        ring:                'hsl(173, 98%, 50%)',
         destructive:         'hsl(0, 63%, 31%)',
         card:                'hsl(224, 71%, 6%)',
         positive:            'hsl(110, 70%, 55%)',
@@ -23,8 +23,8 @@ export default {
         mono:   ['"JetBrains Mono"', 'monospace'],
       },
       boxShadow: {
-        glow:      '0 0 20px rgba(23, 207, 176, 0.15)',
-        'glow-lg': '0 0 40px rgba(23, 207, 176, 0.25)',
+        glow:      '0 0 20px rgba(0, 245, 212, 0.15)',
+        'glow-lg': '0 0 40px rgba(0, 245, 212, 0.25)',
         card:      '0 4px 24px rgba(0, 0, 0, 0.4)',
       },
       animation: {
