@@ -3,14 +3,23 @@ import { Download } from 'lucide-react'
 import { StudioSidebar, StudioView } from '../components/StudioSidebar'
 import { StudioCanvas } from '../components/StudioCanvas'
 import { InstagramExportButton } from '../components/InstagramExportButton'
-import { useCoachingStore } from '../store/coachingStore'
+import { useCompilationStore } from '../store/compilationStore'
 
 export const StudioPage: React.FC = () => {
   const [view, setView] = useState<StudioView>('idle')
   const [outputUrl, setOutputUrl] = useState('')
-  const { athletes } = useCoachingStore()
 
-  const athleteNames = athletes.map((a) => a.name)
+  const { selectedMedia, targetDuration } = useCompilationStore()
+
+  const athleteIds = selectedMedia
+    .map((m) => m.athleteId)
+    .filter((id): id is string => Boolean(id))
+
+  const drillNames = selectedMedia
+    .map((m) => m.drillName)
+    .filter((d): d is string => Boolean(d))
+
+  const duration = targetDuration ?? selectedMedia.reduce((acc, m) => acc + (m.duration ?? 0), 0)
 
   const handleDownload = useCallback(() => {
     if (!outputUrl) return
@@ -32,7 +41,9 @@ export const StudioPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <InstagramExportButton
               compilationUrl={outputUrl}
-              athleteNames={athleteNames}
+              athleteIds={athleteIds}
+              drillNames={drillNames}
+              compilationDuration={duration}
               onDownload={handleDownload}
             />
             <button className="btn-primary" onClick={handleDownload}>

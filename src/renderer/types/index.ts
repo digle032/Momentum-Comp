@@ -9,6 +9,8 @@ export interface MediaItem {
   type: MediaType
   duration?: number  // seconds, for video
   motionScores?: number[]
+  athleteId?: string
+  drillName?: string
 }
 
 export interface CompilationOptions {
