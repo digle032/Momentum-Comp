@@ -2,17 +2,13 @@ import OpenAI from 'openai'
 import { useCoachingStore } from '../store/coachingStore'
 import { ChatMessage } from '../store/coachingStore'
 
-// Lazy singleton — same pattern as ai.ts
-let _client: OpenAI | null = null
-function getClient(): OpenAI {
-  if (!_client) {
-    _client = new OpenAI({
-      apiKey: import.meta.env.VITE_OPENAI_API_KEY ?? '',
-      dangerouslyAllowBrowser: true,
-    })
-  }
-  return _client
-}
+const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+console.log('[AI] Key loaded:', apiKey ? `${apiKey.slice(0, 10)}…` : 'MISSING')
+
+const openai = new OpenAI({
+  apiKey,
+  dangerouslyAllowBrowser: true,
+})
 
 /** Build a comprehensive system prompt from the current store state */
 function buildSystemPrompt(): string {
@@ -105,7 +101,7 @@ export async function* streamAssistantResponse(
   ]
 
   try {
-    const stream = await getClient().chat.completions.create({
+    const stream = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages,
       stream: true,
@@ -117,8 +113,9 @@ export async function* streamAssistantResponse(
       const delta = chunk.choices[0]?.delta?.content
       if (delta) yield delta
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('streamAssistantResponse error:', error)
-    yield "I couldn't connect to the AI service. Please check your API key configuration."
+    const msg = error instanceof Error ? error.message : String(error)
+    yield `❌ AI error: ${msg}`
   }
 }
