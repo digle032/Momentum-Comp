@@ -23,9 +23,9 @@ import { CompilationOptions, MediaItem, Template } from '../types'
 // 720p keeps WASM memory usage well inside the 256 MB heap.
 // Still high-quality for all social platforms.
 const DIMENSIONS = {
-  '9:16': { w: 720,  h: 1280 },
-  '16:9': { w: 1280, h: 720  },
-  '1:1':  { w: 720,  h: 720  },
+  '9:16': { w: 480, h: 854  },
+  '16:9': { w: 854, h: 480  },
+  '1:1':  { w: 480, h: 480  },
 } as const
 
 // ─── Style rules ──────────────────────────────────────────────────────────────
@@ -134,25 +134,76 @@ function peakMotion(item: MediaItem): number {
 // beat timestamp array so cuts can snap to beat boundaries.
 
 async function analyzeAudio(musicFile: File, style: Template): Promise<AudioInfo> {
-  const bpm = STYLE_RULES[style].bpm
-  let totalDuration = 60
-
   try {
     const arrayBuffer = await musicFile.arrayBuffer()
     const ctx = new AudioContext()
     const buffer = await ctx.decodeAudioData(arrayBuffer)
-    totalDuration = buffer.duration
+    const totalDuration = buffer.duration
+    const sampleRate = buffer.sampleRate
     ctx.close()
-  } catch {
-    // Fallback: assume 60 s
-  }
 
-  const beatInterval = 60 / bpm
-  const beats: number[] = []
-  for (let t = 0; t < totalDuration; t += beatInterval) {
-    beats.push(parseFloat(t.toFixed(3)))
+    // Use mono channel 0
+    const channelData = buffer.getChannelData(0)
+    const windowSize = 512
+
+    // Compute RMS energy for each window
+    const energyArray: number[] = []
+    for (let i = 0; i + windowSize <= channelData.length; i += windowSize) {
+      let sum = 0
+      for (let j = i; j < i + windowSize; j++) {
+        sum += channelData[j] * channelData[j]
+      }
+      energyArray.push(Math.sqrt(sum / windowSize))
+    }
+
+    // Rolling average over ~43 frames (~0.5 s at 44100 Hz / 512 samples)
+    const halfWindow = 21
+    const rollingAvg: number[] = energyArray.map((_, i) => {
+      const start = Math.max(0, i - halfWindow)
+      const end = Math.min(energyArray.length - 1, i + halfWindow)
+      let sum = 0
+      for (let j = start; j <= end; j++) sum += energyArray[j]
+      return sum / (end - start + 1)
+    })
+
+    const styleBpm = STYLE_RULES[style].bpm
+    const minBeatInterval = (60 / styleBpm) * 0.5
+
+    // Detect beats: energy > 1.3× rolling avg AND local peak
+    const rawBeats: number[] = []
+    for (let i = 1; i < energyArray.length - 1; i++) {
+      if (
+        energyArray[i] > rollingAvg[i] * 1.3 &&
+        energyArray[i] > energyArray[i - 1] &&
+        energyArray[i] > energyArray[i + 1]
+      ) {
+        rawBeats.push((i * windowSize) / sampleRate)
+      }
+    }
+
+    // Filter beats that are too close together
+    const beats: number[] = []
+    let lastBeat = -Infinity
+    for (const t of rawBeats) {
+      if (t - lastBeat >= minBeatInterval) {
+        beats.push(parseFloat(t.toFixed(3)))
+        lastBeat = t
+      }
+    }
+
+    if (beats.length < 4) return defaultAudioInfo(style)
+
+    // Estimate BPM from median inter-beat interval
+    const intervals: number[] = []
+    for (let i = 1; i < beats.length; i++) intervals.push(beats[i] - beats[i - 1])
+    intervals.sort((a, b) => a - b)
+    const medianInterval = intervals[Math.floor(intervals.length / 2)]
+    const bpm = Math.min(200, Math.max(60, Math.round(60 / medianInterval)))
+
+    return { bpm, beats, totalDuration }
+  } catch {
+    return defaultAudioInfo(style)
   }
-  return { bpm, beats, totalDuration }
 }
 
 function defaultAudioInfo(style: Template): AudioInfo {
@@ -246,7 +297,7 @@ async function prepareAndConcatenate(
 
   // Fill the frame without letterboxing
   const scaleFilter =
-    `scale=${dims.w}:${dims.h}:force_original_aspect_ratio=increase,` +
+    `scale=${dims.w}:${dims.h}:force_original_aspect_ratio=increase:flags=fast_bilinear,` +
     `crop=${dims.w}:${dims.h},setsar=1,setpts=PTS-STARTPTS`
 
   // Prepare each segment

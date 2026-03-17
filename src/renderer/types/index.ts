@@ -1,3 +1,4 @@
+// ── Compilation types (existing) ──────────────────────────────────────────────
 export type Template = 'hype' | 'reels' | 'clean'
 export type AspectRatio = '9:16' | '16:9' | '1:1'
 export type MediaType = 'image' | 'video'
@@ -23,5 +24,54 @@ export interface CompilationOptions {
 export interface GenerationState {
   status: 'idle' | 'analyzing' | 'rendering' | 'done' | 'error'
   progress: number
-  error?: string  // doubles as status label during rendering
+  error?: string
+}
+
+// ── Coaching Hub types (new) ───────────────────────────────────────────────────
+export interface AthleteNote {
+  id: string
+  date: string
+  content: string
+}
+
+export interface Athlete {
+  id: string
+  name: string
+  avatarUrl: string
+  age: number
+  weight: number    // in lbs
+  height: number    // in inches
+  sport: string
+  level: string
+  goals: string
+  notes: AthleteNote[]
+  compilationUrls: string[]
+  teamIds: string[]
+}
+
+export interface Team {
+  id: string
+  name: string
+  sport: string
+  athleteIds: string[]
+}
+
+export interface Exercise {
+  name: string
+  sets: number
+  reps: string
+  notes?: string
+}
+
+export interface TrainingSession {
+  id: string
+  date: string
+  title: string
+  mode: 'structured' | 'freeform'
+  freeformNotes?: string
+  exercises?: Exercise[]
+  referenceVideoUrl?: string
+  isCompleted: boolean
+  postSessionNotes?: string
+  assignedTo: { type: 'team' | 'athlete'; id: string }
 }

@@ -13,6 +13,7 @@ interface CompilationStore {
   removeMedia: (uri: string) => void
   reorderMedia: (from: number, to: number) => void
   clearMedia: () => void
+  updateMotionScores: (uri: string, scores: number[]) => void
 
   template: Template
   setTemplate: (t: Template) => void
@@ -54,6 +55,12 @@ export const useCompilationStore = create<CompilationStore>((set, get) => ({
       return { selectedMedia: arr }
     }),
   clearMedia: () => set({ selectedMedia: [] }),
+  updateMotionScores: (uri, scores) =>
+    set((s) => ({
+      selectedMedia: s.selectedMedia.map((m) =>
+        m.uri === uri ? { ...m, motionScores: scores } : m
+      ),
+    })),
 
   template: 'reels',
   setTemplate: (template) => set({ template }),

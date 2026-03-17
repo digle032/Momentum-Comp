@@ -1,9 +1,10 @@
 import React from 'react'
-import { Film, Zap } from 'lucide-react'
-import { AppView } from '../App'
+import { Film, Zap, AlertCircle } from 'lucide-react'
+type AppView = 'idle' | 'generating' | 'done'
 import { useCompilationStore } from '../store/compilationStore'
 import { ProgressBar } from './ProgressBar'
 import MomentumLogo from './MomentumLogo'
+import { GlassCard } from './GlassCard'
 
 interface CanvasProps {
   view: AppView
@@ -11,7 +12,7 @@ interface CanvasProps {
 }
 
 export const Canvas: React.FC<CanvasProps> = ({ view, outputUrl }) => {
-  const { selectedMedia, aspectRatio, generation } = useCompilationStore()
+  const { selectedMedia, aspectRatio, generation, resetGeneration } = useCompilationStore()
 
   // ── Done: show the video player ──────────────────────────────────────────
   if (view === 'done' && outputUrl) {
@@ -29,6 +30,20 @@ export const Canvas: React.FC<CanvasProps> = ({ view, outputUrl }) => {
     )
   }
 
+  // ── Error state ───────────────────────────────────────────────────────────
+  if (generation.status === 'error') {
+    return (
+      <main className="flex-1 flex items-center justify-center bg-background">
+        <GlassCard className="max-w-[360px] w-full text-center" style={{ padding: '2rem' }}>
+          <AlertCircle size={28} className="text-red-400 mx-auto mb-3" />
+          <h2 className="font-serif text-xl text-umber">Generation failed</h2>
+          <p className="font-sans text-xs text-umber/50 text-center mt-1">{generation.error}</p>
+          <button className="btn-ghost mt-4" onClick={resetGeneration}>Try Again</button>
+        </GlassCard>
+      </main>
+    )
+  }
+
   // ── Generating: show progress ─────────────────────────────────────────────
   if (view === 'generating') {
     return (
@@ -41,7 +56,7 @@ export const Canvas: React.FC<CanvasProps> = ({ view, outputUrl }) => {
           <p className="text-umber/50 font-sans text-sm mb-8">
             {generation.error ?? 'Processing your compilation…'}
           </p>
-          <ProgressBar progress={generation.progress} />
+          <ProgressBar progress={generation.progress} label={generation.error ?? undefined} />
         </div>
       </main>
     )
@@ -57,7 +72,7 @@ export const Canvas: React.FC<CanvasProps> = ({ view, outputUrl }) => {
     return (
       <main className="flex-1 flex flex-col items-center justify-center bg-background gap-6">
         <div
-          className="rounded-2xl border-2 border-dashed border-umber/20 bg-umber/5 flex flex-col items-center justify-center gap-3 shadow-soft"
+          className="rounded-2xl border-2 border-dashed border-umber/20 bg-umber/5 flex flex-col items-center justify-center gap-3 shadow-soft animate-breathe"
           style={{ width: dims.w, height: dims.h }}
         >
           <Film size={28} className="text-umber/25" />
@@ -75,16 +90,22 @@ export const Canvas: React.FC<CanvasProps> = ({ view, outputUrl }) => {
   return (
     <main className="flex-1 flex items-center justify-center bg-background">
       <div className="text-center max-w-md px-8">
-        <div className="flex items-center justify-center mx-auto mb-6">
-          <MomentumLogo size={80} />
+        <div
+          className="rounded-3xl border-2 border-dashed border-umber/20 flex flex-col items-center justify-center gap-6 py-12 px-8 mb-2 animate-breathe"
+        >
+          <div className="flex items-center justify-center">
+            <MomentumLogo size={80} />
+          </div>
+          <div>
+            <h1 className="font-serif text-4xl text-umber mb-3 leading-tight">
+              Your cinematic<br />highlight reel
+            </h1>
+            <p className="font-sans text-umber/50 text-base leading-relaxed">
+              Upload your photos and videos from the sidebar,
+              choose a style, and let AI do the rest.
+            </p>
+          </div>
         </div>
-        <h1 className="font-serif text-4xl text-umber mb-3 leading-tight">
-          Your cinematic<br />highlight reel
-        </h1>
-        <p className="font-sans text-umber/50 text-base leading-relaxed">
-          Upload your photos and videos from the sidebar,
-          choose a style, and let AI do the rest.
-        </p>
       </div>
     </main>
   )
