@@ -1,7 +1,6 @@
 import React from 'react'
 import { LayoutDashboard, Users, Shield, Calendar, Camera, ChevronRight } from 'lucide-react'
 import { cn } from '../lib/utils'
-import MomentumLogo from './MomentumLogo'
 
 export type AppPage = 'dashboard' | 'athletes' | 'teams' | 'calendar' | 'studio'
 
@@ -21,9 +20,9 @@ const navItems: { id: AppPage; label: string; icon: React.ReactNode; description
 export const MainSidebar: React.FC<MainSidebarProps> = ({ activePage, onNavigate }) => (
   <aside className="relative z-10 w-[240px] h-full flex flex-col border-r border-border bg-card/80 backdrop-blur-panel shrink-0">
     {/* Logo */}
-    <div className="h-16 flex items-center gap-3 px-5 border-b border-border shrink-0">
-      <MomentumLogo size={32} />
-      <span className="font-serif text-lg text-foreground tracking-tight">Momentum</span>
+    <div className="h-20 flex items-center gap-3 px-5 border-b border-border shrink-0">
+      <img src="/assets/rabbit-logo.webp" alt="Momentum" className="h-16 w-auto object-contain" />
+      <span className="font-serif text-xl text-foreground tracking-tight">Momentum</span>
     </div>
 
     {/* Nav */}
