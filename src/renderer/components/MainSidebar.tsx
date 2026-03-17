@@ -1,10 +1,10 @@
 import React from 'react'
-import { LayoutDashboard, Users, Shield, Calendar, Camera, ChevronRight, Settings, User } from 'lucide-react'
+import { LayoutDashboard, Users, Shield, Calendar, Camera, ChevronRight, Settings, User, BrainCircuit } from 'lucide-react'
 import { cn } from '../lib/utils'
 import { useSettingsStore } from '../store/settingsStore'
 import { useTranslation } from '../lib/i18n'
 
-export type AppPage = 'dashboard' | 'athletes' | 'teams' | 'calendar' | 'studio' | 'profile' | 'settings'
+export type AppPage = 'dashboard' | 'athletes' | 'teams' | 'calendar' | 'studio' | 'ai-assistant' | 'profile' | 'settings'
 
 interface MainSidebarProps {
   activePage: AppPage
@@ -16,8 +16,9 @@ export const MainSidebar: React.FC<MainSidebarProps> = ({ activePage, onNavigate
   const t = useTranslation(language)
 
   const navItems: { id: AppPage; label: string; icon: React.ReactNode; description: string }[] = [
-    { id: 'dashboard', label: t('dashboard'), icon: <LayoutDashboard size={18} />, description: 'Overview & activity' },
-    { id: 'athletes',  label: t('athletes'),  icon: <Users size={18} />,           description: 'Manage profiles' },
+    { id: 'dashboard',    label: t('dashboard'),    icon: <LayoutDashboard size={18} />, description: 'Overview & activity' },
+    { id: 'ai-assistant', label: 'AI Assistant',  icon: <BrainCircuit size={18} />,   description: 'Ask about your data' },
+    { id: 'athletes',     label: t('athletes'),    icon: <Users size={18} />,           description: 'Manage profiles' },
     { id: 'teams',     label: t('teams'),     icon: <Shield size={18} />,          description: 'Groups & rosters' },
     { id: 'calendar',  label: t('calendar'),  icon: <Calendar size={18} />,        description: 'Schedule sessions' },
     { id: 'studio',    label: t('studio'),    icon: <Camera size={18} />,          description: 'Create compilations' },

@@ -12,6 +12,7 @@ import { CalendarPage } from './pages/CalendarPage'
 import { StudioPage } from './pages/StudioPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { CoachProfilePage } from './pages/CoachProfilePage'
+import { AIAssistantPage } from './pages/AIAssistantPage'
 import { AddAthleteModal } from './components/AddAthleteModal'
 import { SessionModal } from './components/SessionModal'
 import { ToastProvider } from './context/ToastContext'
@@ -130,6 +131,9 @@ export default function App() {
 
       case 'studio':
         return <StudioPage />
+
+      case 'ai-assistant':
+        return <AIAssistantPage />
 
       case 'profile':
         return <CoachProfilePage />

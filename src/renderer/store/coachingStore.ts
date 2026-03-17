@@ -4,6 +4,14 @@ import {
   ProgressEntry, SessionClip, ActivityEvent, CoachProfile, OnboardingState,
 } from '../types'
 
+// ── Chat types ────────────────────────────────────────────────────────────────
+export interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  timestamp: string
+}
+
 // Helper to get ISO date N days ago
 function daysAgo(n: number): string {
   const d = new Date()
@@ -51,6 +59,11 @@ interface CoachingStore {
   onboarding: OnboardingState
   setOnboardingStep: (step: number) => void
   completeOnboarding: () => void
+
+  // AI chat
+  chatHistory: ChatMessage[]
+  addChatMessage: (msg: ChatMessage) => void
+  clearChatHistory: () => void
 }
 
 const seedActivity: ActivityEvent[] = [
@@ -514,6 +527,8 @@ export const useCoachingStore = create<CoachingStore>((set, get) => ({
 
   onboarding: { completed: true, step: 3 },
 
+  chatHistory: [],
+
   // ── Athletes ──────────────────────────────────────────────────────────────
   addAthlete: (athlete) =>
     set((s) => {
@@ -658,4 +673,11 @@ export const useCoachingStore = create<CoachingStore>((set, get) => ({
 
   completeOnboarding: () =>
     set({ onboarding: { completed: true, step: 3 } }),
+
+  // ── AI chat ───────────────────────────────────────────────────────────────
+  addChatMessage: (msg) =>
+    set((s) => ({ chatHistory: [...s.chatHistory, msg] })),
+
+  clearChatHistory: () =>
+    set({ chatHistory: [] }),
 }))
