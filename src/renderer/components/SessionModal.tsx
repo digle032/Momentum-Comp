@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Plus, Trash2 } from 'lucide-react'
 import { GlowingCard } from './ui/GlowingCard'
+import { SessionVideoLogger } from './SessionVideoLogger'
 import { useCoachingStore } from '../store/coachingStore'
 import { TrainingSession, Exercise } from '../types'
 import { cn } from '../lib/utils'
@@ -368,6 +369,20 @@ export const SessionModal: React.FC<SessionModalProps> = ({
                   </button>
                 </div>
               </form>
+
+              {/* Clip Logger — always shown when session exists */}
+              {isEdit && session && (
+                <SessionVideoLogger
+                  sessionId={session.id}
+                  assignedAthleteIds={
+                    assignType === 'athlete'
+                      ? (assignId ? [assignId] : [])
+                      : athletes
+                          .filter((a) => a.teamIds.includes(assignId))
+                          .map((a) => a.id)
+                  }
+                />
+              )}
             </GlowingCard>
           </motion.div>
         </motion.div>

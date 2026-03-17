@@ -1,10 +1,10 @@
 import React from 'react'
-import { LayoutDashboard, Users, Shield, Calendar, Camera, ChevronRight, Settings } from 'lucide-react'
+import { LayoutDashboard, Users, Shield, Calendar, Camera, ChevronRight, Settings, User } from 'lucide-react'
 import { cn } from '../lib/utils'
 import { useSettingsStore } from '../store/settingsStore'
 import { useTranslation } from '../lib/i18n'
 
-export type AppPage = 'dashboard' | 'athletes' | 'teams' | 'calendar' | 'studio' | 'settings'
+export type AppPage = 'dashboard' | 'athletes' | 'teams' | 'calendar' | 'studio' | 'profile' | 'settings'
 
 interface MainSidebarProps {
   activePage: AppPage
@@ -53,23 +53,30 @@ export const MainSidebar: React.FC<MainSidebarProps> = ({ activePage, onNavigate
         ))}
       </nav>
 
-      {/* Footer — Settings pinned above version */}
+      {/* Footer — Profile + Settings pinned above version */}
       <div className="px-3 py-4 border-t border-border shrink-0 space-y-1">
-        <button
-          onClick={() => onNavigate('settings')}
-          className={cn('nav-item w-full text-left group', activePage === 'settings' && 'nav-item-active')}
-        >
-          <span className={cn('shrink-0', activePage === 'settings' ? 'text-accent' : 'text-muted-foreground group-hover:text-foreground')}>
-            <Settings size={18} />
-          </span>
-          <div className="flex-1 min-w-0">
-            <p className={cn('text-sm font-medium leading-none', activePage === 'settings' ? 'text-accent' : '')}>
-              {t('settings')}
-            </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Preferences & profile</p>
-          </div>
-          {activePage === 'settings' && <ChevronRight size={14} className="text-accent shrink-0" />}
-        </button>
+        {(['profile', 'settings'] as AppPage[]).map((id) => {
+          const isProfile = id === 'profile'
+          const label = isProfile ? 'Profile' : t('settings')
+          const desc = isProfile ? 'Your coach profile' : 'Preferences & profile'
+          const icon = isProfile ? <User size={18} /> : <Settings size={18} />
+          return (
+            <button
+              key={id}
+              onClick={() => onNavigate(id)}
+              className={cn('nav-item w-full text-left group', activePage === id && 'nav-item-active')}
+            >
+              <span className={cn('shrink-0', activePage === id ? 'text-accent' : 'text-muted-foreground group-hover:text-foreground')}>
+                {icon}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className={cn('text-sm font-medium leading-none', activePage === id ? 'text-accent' : '')}>{label}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{desc}</p>
+              </div>
+              {activePage === id && <ChevronRight size={14} className="text-accent shrink-0" />}
+            </button>
+          )
+        })}
         <p className="text-[11px] text-muted-foreground text-center pt-2">Momentum v1.0 — {t('coachEdition')}</p>
       </div>
     </aside>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { AuthPage } from './pages/AuthPage'
+import { OnboardingPage } from './pages/OnboardingPage'
 import { AppLayout } from './components/AppLayout'
 import { AppPage } from './components/MainSidebar'
 import { Dashboard } from './pages/Dashboard'
@@ -10,13 +11,18 @@ import { TeamDetailPage } from './pages/TeamDetailPage'
 import { CalendarPage } from './pages/CalendarPage'
 import { StudioPage } from './pages/StudioPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { CoachProfilePage } from './pages/CoachProfilePage'
 import { AddAthleteModal } from './components/AddAthleteModal'
 import { SessionModal } from './components/SessionModal'
+import { ToastProvider } from './context/ToastContext'
+import { useCoachingStore } from './store/coachingStore'
 import { TrainingSession } from './types'
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [activePage, setActivePage] = useState<AppPage>('dashboard')
+
+  const { onboarding, completeOnboarding } = useCoachingStore()
 
   // Sub-navigation for Athletes and Teams
   const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null)
@@ -29,7 +35,19 @@ export default function App() {
   const [newSessionDate, setNewSessionDate] = useState<string>('')
 
   if (!isAuthenticated) {
-    return <AuthPage onAuth={() => setIsAuthenticated(true)} />
+    return (
+      <ToastProvider>
+        <AuthPage onAuth={() => setIsAuthenticated(true)} />
+      </ToastProvider>
+    )
+  }
+
+  if (!onboarding.completed) {
+    return (
+      <ToastProvider>
+        <OnboardingPage onComplete={() => completeOnboarding()} />
+      </ToastProvider>
+    )
   }
 
   const handleNavigate = (page: AppPage) => {
@@ -113,6 +131,9 @@ export default function App() {
       case 'studio':
         return <StudioPage />
 
+      case 'profile':
+        return <CoachProfilePage />
+
       case 'settings':
         return <SettingsPage onLogout={handleLogout} />
 
@@ -122,7 +143,7 @@ export default function App() {
   }
 
   return (
-    <>
+    <ToastProvider>
       <AppLayout activePage={activePage} onNavigate={handleNavigate}>
         {renderPage()}
       </AppLayout>
@@ -138,6 +159,6 @@ export default function App() {
         session={editSession}
         initialDate={newSessionDate || undefined}
       />
-    </>
+    </ToastProvider>
   )
 }
