@@ -38,7 +38,7 @@ export const TeamsPage: React.FC<TeamsPageProps> = ({ onViewTeam }) => {
       {/* Header */}
       <div className="px-6 py-5 border-b border-border shrink-0 flex items-center justify-between">
         <div>
-          <h1 className="font-serif text-2xl text-foreground">Teams</h1>
+          <h1 className="font-serif text-3xl text-foreground">Teams</h1>
           <p className="text-muted-foreground text-sm mt-0.5">{teams.length} team{teams.length !== 1 ? 's' : ''}</p>
         </div>
         <button className="btn-primary" onClick={() => setShowAdd(true)}>

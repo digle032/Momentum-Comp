@@ -19,7 +19,7 @@ const navItems: { id: AppPage; label: string; icon: React.ReactNode; description
 ]
 
 export const MainSidebar: React.FC<MainSidebarProps> = ({ activePage, onNavigate }) => (
-  <aside className="w-[240px] h-full flex flex-col border-r border-border bg-card shrink-0">
+  <aside className="relative z-10 w-[240px] h-full flex flex-col border-r border-border bg-card/80 backdrop-blur-panel shrink-0">
     {/* Logo */}
     <div className="h-16 flex items-center gap-3 px-5 border-b border-border shrink-0">
       <MomentumLogo size={32} />

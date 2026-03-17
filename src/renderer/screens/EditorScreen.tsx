@@ -1,7 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react'
-import { theme } from '../styles/theme'
 import { PrimaryButton } from '../components/PrimaryButton'
-import { GlassCard } from '../components/GlassCard'
 import { ProgressBar } from '../components/ProgressBar'
 import { useCompilationStore } from '../store/compilationStore'
 import { analyzeVideo } from '../services/motion-detector'

@@ -125,7 +125,7 @@ interface GlowingCardProps {
 }
 
 export const GlowingCard = ({ children, className = "", glowProps = {} }: GlowingCardProps) => (
-  <div className={cn("relative rounded-xl border border-border bg-muted overflow-hidden", className)}>
+  <div className={cn("relative rounded-xl border border-border bg-muted/80 backdrop-blur-panel overflow-hidden", className)}>
     <GlowingEffect
       spread={40}
       glow={true}

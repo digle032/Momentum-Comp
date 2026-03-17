@@ -1,5 +1,5 @@
 import React from 'react'
-import { theme } from '../styles/theme'
+
 import { PrimaryButton } from '../components/PrimaryButton'
 import { useCompilationStore } from '../store/compilationStore'
 

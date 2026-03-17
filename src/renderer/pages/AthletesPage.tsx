@@ -31,7 +31,7 @@ export const AthletesPage: React.FC<AthletesPageProps> = ({ onViewAthlete, onAdd
       {/* Header */}
       <div className="px-6 py-5 border-b border-border shrink-0 flex items-center justify-between gap-4">
         <div>
-          <h1 className="font-serif text-2xl text-foreground">Athletes</h1>
+          <h1 className="font-serif text-3xl text-foreground">Athletes</h1>
           <p className="text-muted-foreground text-sm mt-0.5">{athletes.length} athlete{athletes.length !== 1 ? 's' : ''} registered</p>
         </div>
         <div className="flex items-center gap-3">

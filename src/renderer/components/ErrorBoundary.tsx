@@ -1,5 +1,5 @@
 import React from 'react'
-import { GlassCard } from './GlassCard'
+import { GlowingCard } from './ui/GlowingCard'
 import MomentumLogo from './MomentumLogo'
 
 interface ErrorBoundaryState {
@@ -20,18 +20,18 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren, Erro
     if (this.state.hasError) {
       return (
         <div className="h-screen bg-background flex items-center justify-center">
-          <GlassCard className="max-w-[400px] w-full text-center" style={{ padding: '2rem' }}>
+          <GlowingCard className="max-w-[400px] w-full text-center p-8">
             <div className="flex justify-center mb-4">
               <MomentumLogo size={40} />
             </div>
-            <h2 className="font-serif text-2xl text-umber mb-2">Something went wrong</h2>
-            <p className="font-sans text-sm text-umber/50 mb-6">
+            <h2 className="font-serif text-2xl text-foreground mb-2">Something went wrong</h2>
+            <p className="font-sans text-sm text-muted-foreground mb-6">
               An unexpected error occurred. Please reload the app.
             </p>
             <button className="btn-primary" onClick={() => window.location.reload()}>
               Reload
             </button>
-          </GlassCard>
+          </GlowingCard>
         </div>
       )
     }

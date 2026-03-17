@@ -1,7 +1,5 @@
 import React, { useCallback } from 'react'
-import { theme } from '../styles/theme'
 import { PrimaryButton } from '../components/PrimaryButton'
-import { GlassCard } from '../components/GlassCard'
 
 interface Props {
   outputUrl: string

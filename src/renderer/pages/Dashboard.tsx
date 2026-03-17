@@ -69,7 +69,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onAddAthlete, 
         <GlowingCard className="p-6">
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
-              <h1 className="font-serif text-3xl text-foreground">{greeting}, Coach.</h1>
+              <h1 className="font-serif text-4xl text-foreground">{greeting}, Coach.</h1>
               <p className="text-muted-foreground text-sm mt-1">{dateLabel}</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">

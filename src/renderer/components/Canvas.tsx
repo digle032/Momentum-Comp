@@ -4,7 +4,7 @@ type AppView = 'idle' | 'generating' | 'done'
 import { useCompilationStore } from '../store/compilationStore'
 import { ProgressBar } from './ProgressBar'
 import MomentumLogo from './MomentumLogo'
-import { GlassCard } from './GlassCard'
+import { GlowingCard } from './ui/GlowingCard'
 
 interface CanvasProps {
   view: AppView
@@ -34,12 +34,12 @@ export const Canvas: React.FC<CanvasProps> = ({ view, outputUrl }) => {
   if (generation.status === 'error') {
     return (
       <main className="flex-1 flex items-center justify-center bg-background">
-        <GlassCard className="max-w-[360px] w-full text-center" style={{ padding: '2rem' }}>
+        <GlowingCard className="max-w-[360px] w-full text-center" style={{ padding: '2rem' }}>
           <AlertCircle size={28} className="text-red-400 mx-auto mb-3" />
           <h2 className="font-serif text-xl text-umber">Generation failed</h2>
           <p className="font-sans text-xs text-umber/50 text-center mt-1">{generation.error}</p>
           <button className="btn-ghost mt-4" onClick={resetGeneration}>Try Again</button>
-        </GlassCard>
+        </GlowingCard>
       </main>
     )
   }

@@ -102,8 +102,8 @@ export const OrbitalTimeline: React.FC<OrbitalTimelineProps> = ({ items, classNa
               <Clock size={13} className={isSelected ? 'text-accent' : 'text-muted-foreground'} />
             )}
             {item.isCompleted && (
-              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-accent flex items-center justify-center">
-                <CheckCircle2 size={8} className="text-accent-foreground" />
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-positive flex items-center justify-center">
+                <CheckCircle2 size={8} className="text-background" />
               </span>
             )}
           </motion.button>
